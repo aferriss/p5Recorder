@@ -36,7 +36,7 @@ recorder.start();
 
 #### Stopping & Saving
 
-To finish recording, call
+To finish recording and save to your machine, call
 
 ```javascript
 recorder.stop();
