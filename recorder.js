@@ -4,15 +4,20 @@ class Recorder {
     this.p5 = p5Inst;
 
     // Some member variables for keeping our streams around
-    this.videoStream = null;
+    this.mediaStream = null;
     this.mediaRecorder = null;
     this.videoChunks = [];
 
     // Settings
     this.settings = settings;
+    this.audioOnly = settings.audioOnly || false;
     this.fps = settings.fps || 60;
-    this.filename = settings.filename || "sketch.webm";
-    this.codec = settings.codec || "video/webm; codecs=vp8,opus";
+    this.filename =
+      settings.filename || settings.audioOnly ? "sketch.ogg" : "sketch.webm";
+    this.codec =
+      settings.codec || settings.audioOnly
+        ? "audio/ogg; codecs=opus"
+        : "video/webm; codecs=vp8,opus";
     this.videoBitsPerSecond = settings.videoBitsPerSecond || 2500000;
 
     // Are we recording or not
@@ -31,11 +36,15 @@ class Recorder {
     // Get the tracks from the stream destination
     const audioTracks = audioStreamDestinationNode.stream.getAudioTracks();
 
-    // Get the capture stream from the p5 canvas
-    this.videoStream = this.p5.canvas.captureStream(this.fps);
+    if (this.audioOnly) {
+      this.mediaStream = audioStreamDestinationNode.stream;
+    } else {
+      // Get the capture stream from the p5 canvas
+      this.mediaStream = this.p5.canvas.captureStream(this.fps);
 
-    // Add the audio to the canvas stream
-    this.videoStream.addTrack(audioTracks[0]);
+      // Add the audio to the canvas stream
+      this.mediaStream.addTrack(audioTracks[0]);
+    }
   }
 
   // Start recording
@@ -67,7 +76,7 @@ class Recorder {
     this.videoChunks = [];
 
     // Creates a media recorder object
-    this.mediaRecorder = new MediaRecorder(this.videoStream, {
+    this.mediaRecorder = new MediaRecorder(this.mediaStream, {
       mimeType: this.codec,
       videoBitsPerSecond: this.videoBitsPerSecond,
     });
